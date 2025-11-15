@@ -2,3 +2,8 @@ fastapi==0.104.1
 uvicorn==0.24.0
 pillow==10.1.0
 python-dotenv==1.0.0
+torch>=2.0.0
+diffusers>=0.21.0
+transformers>=4.30.0
+accelerate>=0.20.0
+safetensors>=0.3.1

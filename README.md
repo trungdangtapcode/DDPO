@@ -1,30 +1,41 @@
-# Mock Diffusion Model - Text to Image Generation
+# Diffusion Model - Text to Image Generation
 
-A full-stack application that demonstrates streaming diffusion model image generation with a modern tech stack.
+A full-stack application for real-time streaming Stable Diffusion image generation with **4 DDPO-optimized models** and a modern tech stack.
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   ViteJS    │ ───> │   Node.js    │ ───> │   Python    │
-│  (Frontend) │ <─── │   (Backend)  │ <─── │  FastAPI    │
-│  React + TS │      │   Express    │      │   Service   │
-└─────────────┘      └──────────────┘      └─────────────┘
+┌─────────────┐      ┌──────────────┐      ┌─────────────────────┐
+│   ViteJS    │ ───> │   Node.js    │ ───> │   Python FastAPI    │
+│  (Frontend) │ <─── │   (Backend)  │ <─── │ Stable Diffusion SD │
+│  React + TS │      │   Express    │      │   4 DDPO Models     │
+└─────────────┘      └──────────────┘      └─────────────────────┘
 ```
 
 **Frontend**: ViteJS + React + TypeScript + Tailwind CSS + shadcn/ui  
 **Backend**: Node.js + Express (Proxy/Gateway)  
-**API Service**: Python + FastAPI (Mock Image Generation)
+**API Service**: Python + FastAPI + Stable Diffusion + DDPO Models
 
 ## ✨ Features
 
-- 🎨 Real-time streaming image generation
+- 🎨 **Real Stable Diffusion** image generation with 4 optimized models
+- 🎯 **Model Selection**: Choose between Aesthetic, Alignment, Compressibility, and Incompressibility
 - 📊 Live progress tracking with step-by-step updates
-- 🎭 Progressive image reveal (simulates diffusion denoising)
+- 🔄 Progressive image reveal (real diffusion denoising)
 - 💅 Modern UI with Tailwind CSS and shadcn/ui components
-- 🔄 Server-Sent Events (SSE) for streaming
+- 🌊 Server-Sent Events (SSE) for real-time streaming
 - 🎯 TypeScript for type safety
 - 🚀 Fast development with Vite
+- 🔧 CUDA-optimized with memory management
+
+## 🤖 Available Models
+
+1. **Aesthetic Quality** - Optimized for visual appeal
+2. **Text Alignment** - Optimized for prompt accuracy
+3. **Compressibility** - Optimized for smaller file sizes
+4. **Incompressibility** - Optimized for maximum detail
+
+All models are loaded simultaneously (~10GB VRAM total) for instant switching.
 
 ## 📁 Project Structure
 
@@ -106,10 +117,20 @@ Visit `http://localhost:5173` in your browser!
 
 ## 🎯 Usage
 
-1. **Enter a Prompt**: Type your image description in the input field
-2. **Click Generate**: Watch the magic happen in real-time
-3. **Observe Progress**: See the image evolve through denoising steps
-4. **View Result**: The final high-quality image appears when complete
+1. **Select a Model**: Choose from 4 DDPO-optimized models (Aesthetic, Alignment, Compressibility, Incompressibility)
+2. **Enter a Prompt**: Type your image description in the input field
+3. **Click Generate**: Watch real Stable Diffusion in real-time
+4. **Observe Progress**: See the image evolve through actual denoising steps
+5. **View Result**: The final high-quality image appears when complete
+6. **Compare Models**: Try the same prompt with different models to see variations!
+
+## 📚 Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Quick setup guide
+- **[MULTI_MODEL_GUIDE.md](MULTI_MODEL_GUIDE.md)** - Multi-model selection guide
+- **[REAL_MODEL_GUIDE.md](REAL_MODEL_GUIDE.md)** - Real Stable Diffusion setup
+- **[CONFIG.md](CONFIG.md)** - Configuration options
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture details
 
 ## 🔧 Development
 
@@ -156,32 +177,36 @@ uvicorn main:app --reload  # Auto-reload on changes
 ### Python API
 - **FastAPI**: Modern Python web framework
 - **Uvicorn**: ASGI server
-- **Pillow**: Image manipulation
-- **asyncio**: Async support
+- **PyTorch**: Deep learning framework
+- **Diffusers**: Hugging Face diffusion models
+- **Stable Diffusion**: Text-to-image generation
+- **DDPO Models**: 4 optimized variants (kvablack)
 
 ## 📡 API Endpoints
 
 ### Python API (Port 8000)
 
-- `GET /` - API info
-- `GET /generate?prompt={prompt}&steps={steps}` - Generate image (SSE stream)
-- `GET /health` - Health check
+- `GET /` - API info and loaded models
+- `GET /generate?prompt={prompt}&steps={steps}&model={model}` - Generate image (SSE stream)
+  - `model`: aesthetic | alignment | compressibility | incompressibility
+- `GET /health` - Health check with loaded models list
 
 ### Node.js Backend (Port 3001)
 
 - `GET /` - Backend info
-- `GET /api/generate?prompt={prompt}&steps={steps}` - Proxy to Python API
+- `GET /api/generate?prompt={prompt}&steps={steps}&model={model}` - Proxy to Python API
 - `GET /api/health` - Health check (includes Python API status)
 
 ## 🔄 How It Works
 
-1. **User Input**: User enters a prompt in the React frontend
-2. **SSE Connection**: Frontend establishes Server-Sent Events connection
-3. **Backend Proxy**: Node.js backend proxies request to Python API
-4. **Image Generation**: Python FastAPI generates mock images progressively
-5. **Streaming**: Each denoising step is sent back through the SSE stream
-6. **Progressive Display**: Frontend updates image in real-time
-7. **Completion**: Final high-quality image is displayed
+1. **Model Loading**: All 4 DDPO models load at Python API startup (~10GB VRAM)
+2. **User Input**: User selects model and enters prompt in React frontend
+3. **SSE Connection**: Frontend establishes Server-Sent Events connection
+4. **Backend Proxy**: Node.js backend proxies request to Python API with model parameter
+5. **Image Generation**: Python FastAPI uses selected Stable Diffusion model
+6. **Streaming**: Each denoising step (every 3rd) is sent back through SSE stream
+7. **Progressive Display**: Frontend updates image in real-time with JPEG base64
+8. **Completion**: Final high-quality image is displayed with model info
 
 ## 🎭 Mock Diffusion Process
 

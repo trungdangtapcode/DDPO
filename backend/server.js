@@ -32,7 +32,7 @@ app.get('/api/health', async (req, res) => {
 
 // Proxy endpoint for image generation with streaming
 app.get('/api/generate', async (req, res) => {
-    const { prompt, steps } = req.query;
+    const { prompt, steps, model, guidance_scale, negative_prompt } = req.query;
 
     if (!prompt) {
         return res.status(400).json({ error: 'Prompt is required' });
@@ -45,9 +45,24 @@ app.get('/api/generate', async (req, res) => {
         res.setHeader('Connection', 'keep-alive');
         res.setHeader('Access-Control-Allow-Origin', '*');
 
-        // Make request to Python API
+        // Build params object
+        const params = { 
+            prompt, 
+            steps: steps || 20,
+            model: model || 'compressibility'
+        };
+
+        // Add optional parameters if provided
+        if (guidance_scale) {
+            params.guidance_scale = guidance_scale;
+        }
+        if (negative_prompt) {
+            params.negative_prompt = negative_prompt;
+        }
+
+        // Make request to Python API with all parameters
         const response = await axios.get(`${PYTHON_API_URL}/generate`, {
-            params: { prompt, steps: steps || 20 },
+            params: params,
             responseType: 'stream'
         });
 
