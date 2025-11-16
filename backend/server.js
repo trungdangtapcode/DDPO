@@ -9,7 +9,8 @@ const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://localhost:8000';
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Increase limit for base64 images
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Health check
 app.get('/api/health', async (req, res) => {
@@ -30,12 +31,22 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// Proxy endpoint for image generation with streaming
-app.get('/api/generate', async (req, res) => {
-    const { prompt, steps, model, guidance_scale, negative_prompt } = req.query;
+// Proxy endpoint for image generation with streaming (POST for large payloads)
+app.post('/api/generate', async (req, res) => {
+    const requestBody = req.body;
 
-    if (!prompt) {
-        return res.status(400).json({ error: 'Prompt is required' });
+    console.log('=== Incoming Generate Request ===');
+    console.log('Prompt:', requestBody.prompt || '(empty)');
+    console.log('Prompt Image:', requestBody.prompt_image ? 'Yes (base64)' : 'No');
+    console.log('Init Image:', requestBody.init_image ? 'Yes (base64)' : 'No');
+    console.log('Model:', requestBody.model);
+    console.log('Steps:', requestBody.steps);
+    console.log('================================');
+
+    // Allow empty prompt if prompt_image is provided
+    if (!requestBody.prompt && !requestBody.prompt_image) {
+        console.error('❌ Validation error: Neither prompt nor prompt_image provided');
+        return res.status(400).json({ error: 'Either prompt or prompt_image is required' });
     }
 
     try {
@@ -45,26 +56,17 @@ app.get('/api/generate', async (req, res) => {
         res.setHeader('Connection', 'keep-alive');
         res.setHeader('Access-Control-Allow-Origin', '*');
 
-        // Build params object
-        const params = { 
-            prompt, 
-            steps: steps || 20,
-            model: model || 'compressibility'
-        };
+        console.log('🔄 Forwarding request to Python API...');
 
-        // Add optional parameters if provided
-        if (guidance_scale) {
-            params.guidance_scale = guidance_scale;
-        }
-        if (negative_prompt) {
-            params.negative_prompt = negative_prompt;
-        }
-
-        // Make request to Python API with all parameters
-        const response = await axios.get(`${PYTHON_API_URL}/generate`, {
-            params: params,
-            responseType: 'stream'
+        // Forward the entire request body to Python API
+        const response = await axios.post(`${PYTHON_API_URL}/generate`, requestBody, {
+            responseType: 'stream',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
+
+        console.log('✓ Connected to Python API stream');
 
         // Forward the stream to the client
         response.data.on('data', (chunk) => {
@@ -72,21 +74,27 @@ app.get('/api/generate', async (req, res) => {
         });
 
         response.data.on('end', () => {
+            console.log('✓ Stream completed successfully');
             res.end();
         });
 
         response.data.on('error', (error) => {
-            console.error('Stream error:', error);
+            console.error('❌ Stream error:', error);
             res.end();
         });
 
         // Handle client disconnect
         req.on('close', () => {
+            console.log('⚠ Client disconnected, destroying stream');
             response.data.destroy();
         });
 
     } catch (error) {
-        console.error('Error proxying to Python API:', error.message);
+        console.error('❌ Error proxying to Python API:', error.message);
+        if (error.response) {
+            console.error('Python API response status:', error.response.status);
+            console.error('Python API response data:', error.response.data);
+        }
         
         if (!res.headersSent) {
             res.status(500).json({ 
