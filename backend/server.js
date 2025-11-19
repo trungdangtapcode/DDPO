@@ -35,13 +35,19 @@ app.get('/api/health', async (req, res) => {
 app.post('/api/generate', async (req, res) => {
     const requestBody = req.body;
 
-    console.log('=== Incoming Generate Request ===');
-    console.log('Prompt:', requestBody.prompt || '(empty)');
-    console.log('Prompt Image:', requestBody.prompt_image ? 'Yes (base64)' : 'No');
-    console.log('Init Image:', requestBody.init_image ? 'Yes (base64)' : 'No');
-    console.log('Model:', requestBody.model);
-    console.log('Steps:', requestBody.steps);
-    console.log('================================');
+    // SHOW SOME PAYLOAD
+    // console.log('=== Incoming Generate Request ===');
+    // console.log('Prompt:', requestBody.prompt || '(empty)');
+    // console.log('Prompt Image:', requestBody.prompt_image ? 'Yes (base64)' : 'No');
+    // console.log('Init Image:', requestBody.init_image ? 'Yes (base64)' : 'No');
+    // console.log('Model:', requestBody.model);
+    // console.log('Steps:', requestBody.steps);
+    // console.log('================================');
+
+    // SHOW FULL PAYLOAD
+    console.log('=== Full Request Body ===');
+    console.log(requestBody);
+    console.log('=========================');
 
     // Allow empty prompt if prompt_image is provided
     if (!requestBody.prompt && !requestBody.prompt_image) {
