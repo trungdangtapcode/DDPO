@@ -36,7 +36,7 @@ function App() {
   const [initImage, setInitImage] = useState<string | null>(null)
   const [strength, setStrength] = useState(0.75)
   const [promptImage, setPromptImage] = useState<string | null>(null) // Image to use as prompt
-  const [useImageAsPrompt, setUseImageAsPrompt] = useState(false) // Toggle for image-as-prompt mode
+  const [, setUseImageAsPrompt] = useState(false) // Toggle for image-as-prompt mode
   const [isGenerating, setIsGenerating] = useState(false)
   const [currentImage, setCurrentImage] = useState<string | null>(null)
   const [currentModel, setCurrentModel] = useState<string | null>(null)

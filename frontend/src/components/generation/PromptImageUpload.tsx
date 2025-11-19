@@ -18,7 +18,6 @@ interface PromptImageUploadProps {
 export function PromptImageUpload({
   promptImage,
   setPromptImage,
-  useImageAsPrompt,
   setUseImageAsPrompt,
   isGenerating,
 }: PromptImageUploadProps) {
